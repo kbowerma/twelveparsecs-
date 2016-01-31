@@ -23,8 +23,13 @@
  */
 
 #import <UIKit/UIKit.h>
+#import <SmartSync/SFSmartSyncSyncManager.h>
+#import <SmartSync/SFSyncState.h>
 #import <SalesforceSDKCore/SFLogger.h>
 #import "SObjectData.h"
+
+static CGFloat    const kNavBarTitleFontSize            = 20.0;
+static NSUInteger const kNavBarTintColor                = 0xf10000;
 
 @class SObjectDataManager;
 
@@ -36,18 +41,39 @@
 @property (nonatomic, strong) SObjectDataManager *productDataMgr;
 @property (nonatomic, strong) SObjectDataManager *sampleRequestDataMgr;
 
-+ (UIColor *)colorFromRgbHexValue:(NSUInteger)rgbHexColorValue;
-
+// Popover methods for handling Salesforce login.
 - (void)popoverOptionSelected:(NSString *)text;
-
 - (void)clearPopovers:(NSNotification *)note;
 
+/**
+ Create color from an integer rgb value.
+ @param rgbHexColorValue integer rgb value.
+ @return the color.
+ */
++ (UIColor *)colorFromRgbHexValue:(NSUInteger)rgbHexColorValue;
+
+/**
+ Format the title or return an empty string.
+ @param title to format.
+ @return the formatted title.
+ */
 - (NSString *)formatTitle:(NSString *)title;
 
+/**
+ Create an accessory view for each cell.
+ @param obj the object used to create the accessory.
+ @return the created accessory view.
+ */
 - (UIView *)accessoryViewForContact:(SObjectData *)contact;
 
+/*!
+ Synchronize up/down all records for current data manager.
+ */
 - (void)syncUpDown;
 
+/*!
+ Reload all data.
+ */
 - (void)reloadData;
 
 @end

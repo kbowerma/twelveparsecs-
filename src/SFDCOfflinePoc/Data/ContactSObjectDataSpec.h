@@ -22,6 +22,14 @@
  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//
+//  ContactSObjectDataSpec.h
+//  SFDCOfflinePoc
+//
+//  Created by pvmagacho on 1/24/16.
+//  Copyright © 2016 Topcoder Inc. All rights reserved.
+//
+
 #import "SObjectDataSpec.h"
 
 extern NSString * const kContactFirstNameField;
@@ -32,6 +40,12 @@ extern NSString * const kContactEmailField;
 extern NSString * const kContactDepartmentField;
 extern NSString * const kContactHomePhoneField;
 
+/**
+ * Object to hold Contact data specification.
+ *
+ * @author pvmagacho
+ * @version 1.0
+ */
 @interface ContactSObjectDataSpec : SObjectDataSpec
 
 @end

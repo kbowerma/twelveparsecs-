@@ -2,7 +2,7 @@
 //  SampleRequestListViewController.m
 //  SFDCOfflinePoc
 //
-//  Created by PAULO VITOR MAGACHO DA SILVA on 1/24/16.
+//  Created by pvmagacho on 1/24/16.
 //  Copyright © 2016 Topcoder Inc. All rights reserved.
 //
 
@@ -24,12 +24,9 @@
 #import <SmartSync/SFSyncState.h>
 
 static NSString * const kNavBarTitleText                = @"Sample Requests";
-static NSUInteger const kNavBarTintColor                = 0xf10000;
-static CGFloat    const kNavBarTitleFontSize            = 27.0;
 static NSUInteger const kProductTitleTextColor          = 0x696969;
 static CGFloat    const kProductTitleFontSize           = 15.0;
 static CGFloat    const kProductDetailFontSize          = 13.0;
-
 
 @interface SampleRequestListViewController () <UISearchBarDelegate>
 
@@ -73,11 +70,6 @@ static CGFloat    const kProductDetailFontSize          = 13.0;
     return self;
 }
 
-- (void)dealloc
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 #pragma mark - View lifecycle
 
 - (void)loadView {
@@ -111,6 +103,9 @@ static CGFloat    const kProductDetailFontSize          = 13.0;
 
 #pragma mark - Overload methods
 
+/*!
+ Reload all data.
+ */
 - (void)reloadData {
     [self.filtereDataRows removeAllObjects];
     [self.tableView reloadData];
@@ -162,13 +157,13 @@ static CGFloat    const kProductDetailFontSize          = 13.0;
 - (void)tableView:(UITableView *)theTableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     SampleRequestSObjectData *contact = [self.filtereDataRows objectAtIndex:indexPath.row];
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:kNavBarTitleText style:UIBarButtonItemStylePlain target:nil action:nil];
-    SampleRequestDetailViewController *detailVc = [[SampleRequestDetailViewController alloc] initWithSampleRequest:contact
-                                                                                                       dataManager:self.dataMgr
-                                                                                                         saveBlock:^{
-                                                                                                           [self.tableView beginUpdates];
-                                                                                                           [self.tableView reloadRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationNone];
-                                                                                                           [self.tableView endUpdates];
-                                                                                                       }];
+    SampleRequestDetailViewController *detailVc = [[SampleRequestDetailViewController alloc]
+                                                   initWithSampleRequest:contact dataManager:self.dataMgr
+                                                   saveBlock:^{
+                                                       [self.tableView beginUpdates];
+                                                       [self.tableView reloadRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationNone];
+                                                       [self.tableView endUpdates];
+                                                   }];
     detailVc.contactMgr = self.contactDataMgr;
     detailVc.productMgr = self.productDataMgr;
 

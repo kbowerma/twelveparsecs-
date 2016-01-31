@@ -2,7 +2,7 @@
 //  SampleRequestSObjectDataSpec.m
 //  SFDCOfflinePoc
 //
-//  Created by PAULO VITOR MAGACHO DA SILVA on 1/24/16.
+//  Created by pvmagacho on 1/24/16.
 //  Copyright © 2016 Topcoder Inc. All rights reserved.
 //
 
@@ -26,7 +26,7 @@ NSString * const kSampleRequestAuthorizedUsersField = @"Authorized_Users__r";
 
 - (id)init {
     NSString *objectType = @"SampleRequest__c";
-    NSArray *objectFieldSpecs = @[ [[SObjectDataFieldSpec alloc] initWithFieldName:kObjectIdField searchable:NO],
+    NSArray *objectFieldSpecs = @[ [[SObjectDataFieldSpec alloc] initWithFieldName:kSObjectIdField searchable:NO],
                                    [[SObjectDataFieldSpec alloc] initWithFieldName:kObjectOwnerIdField searchable:NO],
                                    [[SObjectDataFieldSpec alloc] initWithFieldName:kSampleRequestNameField searchable:YES],
                                    [[SObjectDataFieldSpec alloc] initWithFieldName:kSampleRequestContactQuery searchable:NO],

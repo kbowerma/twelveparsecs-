@@ -22,6 +22,14 @@
  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//
+//  ContactSObjectDataSpec.m
+//  SFDCOfflinePoc
+//
+//  Created by pvmagacho on 1/24/16.
+//  Copyright © 2016 Topcoder Inc. All rights reserved.
+//
+
 #import "ContactSObjectDataSpec.h"
 #import "ContactSObjectData.h"
 
@@ -37,7 +45,7 @@ NSString * const kContactHomePhoneField    = @"HomePhone";
 
 - (id)init {
     NSString *objectType = @"Contact";
-    NSArray *objectFieldSpecs = @[ [[SObjectDataFieldSpec alloc] initWithFieldName:kObjectIdField searchable:NO],
+    NSArray *objectFieldSpecs = @[ [[SObjectDataFieldSpec alloc] initWithFieldName:kSObjectIdField searchable:NO],
                                    [[SObjectDataFieldSpec alloc] initWithFieldName:kObjectOwnerIdField searchable:NO],
                                    [[SObjectDataFieldSpec alloc] initWithFieldName:kContactFirstNameField searchable:YES],
                                    [[SObjectDataFieldSpec alloc] initWithFieldName:kContactLastNameField searchable:YES],
@@ -65,7 +73,7 @@ NSString * const kContactHomePhoneField    = @"HomePhone";
 
     self.whereClause = [NSString stringWithFormat:@"OwnerId = '%@'", [self.class currentUserID]];
 
-    NSString *soupName = @"contacts";
+    NSString *soupName = @"Contacts";
     NSString *orderByFieldName = kContactLastNameField;
     return [self initWithObjectType:objectType objectFieldSpecs:objectFieldSpecs updateObjectFieldSpecs:updateObjectFieldSpecs
                          indexSpecs:indexSpecs soupName:soupName orderByFieldName:orderByFieldName];

@@ -67,42 +67,43 @@ static char* const kSearchFilterQueueName = "com.salesforce.SFDCOfflinePoc.searc
     return [self initWithViewController:nil dataSpec:dataSpec];
 }
 
-- (void)dealloc {
-}
-
 - (SFSmartStore *)store {
     return [SFSmartStore sharedStoreWithName:kDefaultSmartStoreName];
 }
 
-- (void)refreshRemoteData {
+- (SObjectDataSpec *)dataSpec {
+    return _dataSpec;
+}
+
+- (void)refreshRemoteData:(SFSyncSyncManagerUpdateBlock)completionBlock {
     if (![self.store soupExists:self.dataSpec.soupName]) {
         [self registerSoup];
     }
-    
+
     __weak SObjectDataManager *weakSelf = self;
     SFSyncSyncManagerUpdateBlock updateBlock = ^(SFSyncState* sync) {
         if ([sync isDone] || [sync hasFailed]) {
-            weakSelf.syncDownId = sync.syncId;
-            [weakSelf refreshLocalData];
+            if (completionBlock) {
+                completionBlock(sync);
+            } else {
+                [weakSelf refreshLocalData];
+            }
         }
     };
 
     [self.store clearSoup:self.dataSpec.soupName];
-    
-    // if (self.syncDownId == 0) {
-        // first time
-        NSString *soqlQuery = self.dataSpec.whereClause ?
-        [NSString stringWithFormat:@"SELECT %@, LastModifiedDate FROM %@ WHERE %@ LIMIT %lu", [self.dataSpec.fieldNames componentsJoinedByString:@","], self.dataSpec.objectType, self.dataSpec.whereClause, (unsigned long)kSyncLimit] :
-        [NSString stringWithFormat:@"SELECT %@, LastModifiedDate FROM %@ LIMIT %lu", [self.dataSpec.fieldNames componentsJoinedByString:@","], self.dataSpec.objectType, (unsigned long)kSyncLimit];
 
-        SFSyncOptions *syncOptions = [SFSyncOptions newSyncOptionsForSyncDown:SFSyncStateMergeModeLeaveIfChanged];
-        SFSyncDownTarget *syncTarget = [SFSoqlSyncDownTarget newSyncTarget:soqlQuery];
-        [self.syncMgr syncDownWithTarget:syncTarget options:syncOptions soupName:self.dataSpec.soupName updateBlock:updateBlock];
-    // }
-    //else {
-        // subsequent times
-      //  [self.syncMgr reSync:[NSNumber numberWithInteger:self.syncDownId] updateBlock:updateBlock];
-    //}
+    NSString *soqlQuery = self.dataSpec.whereClause ?
+    [NSString stringWithFormat:@"SELECT %@, LastModifiedDate FROM %@ WHERE %@ LIMIT %lu", [self.dataSpec.fieldNames componentsJoinedByString:@","], self.dataSpec.objectType, self.dataSpec.whereClause, (unsigned long)kSyncLimit] :
+    [NSString stringWithFormat:@"SELECT %@, LastModifiedDate FROM %@ LIMIT %lu", [self.dataSpec.fieldNames componentsJoinedByString:@","], self.dataSpec.objectType, (unsigned long)kSyncLimit];
+
+    SFSyncOptions *syncOptions = [SFSyncOptions newSyncOptionsForSyncDown:SFSyncStateMergeModeLeaveIfChanged];
+    SFSyncDownTarget *syncTarget = [SFSoqlSyncDownTarget newSyncTarget:soqlQuery];
+    [self.syncMgr syncDownWithTarget:syncTarget options:syncOptions soupName:self.dataSpec.soupName updateBlock:updateBlock];
+}
+
+- (void)refreshRemoteData {
+    [self refreshRemoteData:nil];
 }
 
 - (void)updateRemoteData:(SFSyncSyncManagerUpdateBlock)completionBlock {
@@ -149,7 +150,7 @@ static char* const kSearchFilterQueueName = "com.salesforce.SFDCOfflinePoc.searc
 
 - (SObjectData *)findById:(NSString *)objectId {
     for (SObjectData *data in [self.fullDataRowList copy]) {
-        NSString *fieldValue = [data fieldValueForFieldName:kObjectIdField];
+        NSString *fieldValue = [data fieldValueForFieldName:kSObjectIdField];
         if ([fieldValue isEqualToString:objectId]) {
             return data;
         }

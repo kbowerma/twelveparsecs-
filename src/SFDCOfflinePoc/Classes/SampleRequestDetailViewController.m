@@ -2,7 +2,7 @@
 //  SampleRequestDetailViewController.h
 //  SFDCOfflinePoc
 //
-//  Created by PAULO VITOR MAGACHO DA SILVA on 1/24/16.
+//  Created by pvmagacho on 1/24/16.
 //  Copyright © 2016 Topcoder Inc. All rights reserved.
 //
 
@@ -11,10 +11,12 @@
 #import "SampleRequestSObjectData.h"
 #import "ProductSObjectData.h"
 #import "ContactSObjectData.h"
+#import "Helper.h"
 
 #define kTagContact 1000
 #define kTagProduct 1001
 #define kTagStatus 1002
+#define kTagDeliveryDate 1003
 
 @interface SampleRequestDetailViewController () <UIAlertViewDelegate, UITextFieldDelegate>
 
@@ -33,8 +35,14 @@
 @property (nonatomic, strong) ContactSObjectData *contactObject;
 @property (nonatomic, strong) ProductSObjectData *productObject;
 
+@property (nonatomic, strong) NSPredicate *contactPredicate;
+@property (nonatomic, strong) NSPredicate *productPredicate;
+
 // View / UI properties
 @property (nonatomic, strong) UIPickerView *pickerView;
+@property (nonatomic, strong) UIDatePicker *datePickerView;
+@property (nonatomic, strong) UIView *toastView;
+@property (nonatomic, strong) UILabel *toastViewMessageLabel;
 
 @end
 
@@ -42,13 +50,23 @@
     BOOL isCurrentUser;
 }
 
-@synthesize contactMgr;
-@synthesize productMgr;
+@synthesize contactMgr, productMgr;
 
+/**
+ Initialize a new sample request detail view controller.
+ @param dataMgr the data manager object.
+ @param saveBlock the block to be called when data is saved.
+ */
 - (id)initForNewSampleRequestWithDataManager:(SObjectDataManager *)dataMgr saveBlock:(void (^)(void))saveBlock {
     return [self initWithSampleRequest:nil dataManager:dataMgr saveBlock:saveBlock];
 }
 
+/**
+ Initialize with an existing sample request detail view controller.
+ @param ample request the current product.
+ @param dataMgr the data manager object.
+ @param saveBlock the block to be called when data is saved.
+ */
 - (id)initWithSampleRequest:(SampleRequestSObjectData *)sampleRequest dataManager:(SObjectDataManager *)dataMgr saveBlock:(void (^)(void))saveBlock {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
@@ -69,6 +87,10 @@
         self.pickerView.dataSource = self;
         self.pickerView.delegate = self;
         self.pickerView.showsSelectionIndicator = YES;
+
+        self.datePickerView = [[UIDatePicker alloc] init];
+        self.datePickerView.datePickerMode = UIDatePickerModeDate;
+        self.datePickerView.minimumDate = [NSDate date];
     }
     return self;
 }
@@ -76,8 +98,24 @@
 - (void)loadView {
     [super loadView];
 
-    self.contactObject = self.isNewSampleRequest ? [self.contactMgr.dataRows objectAtIndex:0] : [self.contactMgr findById:self.sampleRequest.contactId];
-    self.productObject = self.isNewSampleRequest ? [self.productMgr.dataRows objectAtIndex:0] : [self.productMgr findById:self.sampleRequest.productId];
+    // Toast view
+    self.toastView = [[UIView alloc] initWithFrame:CGRectZero];
+    self.toastView.backgroundColor = [UIColor colorWithRed:(38.0 / 255.0) green:(38.0 / 255.0) blue:(38.0 / 255.0) alpha:0.7];
+    self.toastView.layer.cornerRadius = 10.0;
+    self.toastView.alpha = 0.0;
+
+    self.toastViewMessageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    self.toastViewMessageLabel.font = [UIFont systemFontOfSize:kToastMessageFontSize];
+    self.toastViewMessageLabel.textColor = [UIColor whiteColor];
+    [self.toastView addSubview:self.toastViewMessageLabel];
+    [self.view addSubview:self.toastView];
+
+    self.contactPredicate = [NSPredicate predicateWithBlock:^BOOL(ContactSObjectData *obj, NSDictionary *bindings) {
+        return ![self.contactMgr dataLocallyCreated:obj];
+    }];
+    self.productPredicate = [NSPredicate predicateWithBlock:^BOOL(ProductSObjectData *obj, NSDictionary *bindings) {
+        return ![self.productMgr dataLocallyCreated:obj];
+    }];
 
     self.dataRows = [self dataRowsFromSampleRequest];
     self.navigationController.navigationBar.tintColor = [UIColor whiteColor];
@@ -89,6 +127,12 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+
+    [self.tableView setAllowsSelection:NO];
+
+    self.contactObject = self.isNewSampleRequest ? [self.contactMgr.dataRows objectAtIndex:0] : [self.contactMgr findById:self.sampleRequest.contactId];
+    self.productObject = self.isNewSampleRequest ? [self.productMgr.dataRows objectAtIndex:0] : [self.productMgr findById:self.sampleRequest.productId];
+
     if (self.isNewSampleRequest) {
         [self editSampleRequest];
     }
@@ -96,15 +140,13 @@
 
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
-    if (self.sampleRequestUpdated && self.saveBlock != NULL) {
-        dispatch_async(dispatch_get_main_queue(), self.saveBlock);
-    }
-}
+    if (self.sampleRequestUpdated) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateRecord object:nil];
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+        if (self.saveBlock != NULL) {
+            dispatch_async(dispatch_get_main_queue(), self.saveBlock);
+        }
+    }
 }
 
 #pragma mark - UITableView delegate methods
@@ -132,8 +174,11 @@
             UITextField *editField = sampleRequestData[3];
             editField.frame = cell.contentView.bounds;
             if (sampleRequestData[1] == kSampleRequestNameField ||
-                sampleRequestData[1] == kSampleRequestAuthorizedUsersField) {
+                sampleRequestData[1] == kSampleRequestAuthorizedUsersField ||
+                (sampleRequestData[1] == kSampleRequestDeliveryDateField && self.isNewSampleRequest)) {
                 editField.delegate = self; // will disable the text field
+            } else if (sampleRequestData[1] == kSampleRequestQuantityField) {
+                editField.keyboardType = UIKeyboardTypeNumberPad;
             }
             [self textFieldAddLeftMargin:editField];
             [cell.contentView addSubview:editField];
@@ -166,10 +211,10 @@
     NSString *value = nil;
 
     if (self.editTextTag == kTagContact) {
-        self.contactObject = [self.contactMgr.dataRows objectAtIndex:row];
+        self.contactObject = [[self.contactMgr.dataRows filteredArrayUsingPredicate:self.contactPredicate] objectAtIndex:row];
         value = [self formatNameFromContact:self.contactObject];
     } else if (self.editTextTag == kTagProduct) {
-        self.productObject = [self.productMgr.dataRows objectAtIndex:row];
+        self.productObject = [[self.productMgr.dataRows filteredArrayUsingPredicate:self.productPredicate] objectAtIndex:row];
         value = [self formatNameFromProduct:self.productObject];
     } else if (self.editTextTag == kTagStatus) {
         value = [self.statusArray objectAtIndex:row];
@@ -181,34 +226,45 @@
 
 - (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component {
     if (self.editTextTag == kTagContact) {
-        return self.contactMgr.dataRows.count;
+        return [self.contactMgr.dataRows filteredArrayUsingPredicate:self.contactPredicate].count;
     } else if (self.editTextTag == kTagProduct) {
-        return self.productMgr.dataRows.count;
+        return [self.productMgr.dataRows filteredArrayUsingPredicate:self.productPredicate].count;
     } else if (self.editTextTag == kTagStatus) {
         return self.statusArray.count;
     }
+
     return 0;
 }
 
 - (NSString *)pickerView:(UIPickerView *)pickerView titleForRow: (NSInteger)row forComponent:(NSInteger)component {
     if (self.editTextTag == kTagContact) {
-        ContactSObjectData *obj = [self.contactMgr.dataRows objectAtIndex:row];
+        ContactSObjectData *obj = [[self.contactMgr.dataRows filteredArrayUsingPredicate:self.contactPredicate] objectAtIndex:row];
         return [self formatNameFromContact:obj];
     } else if (self.editTextTag == kTagProduct) {
-        return [[self.productMgr.dataRows objectAtIndex:row] name];
+        return [[[self.productMgr.dataRows filteredArrayUsingPredicate:self.productPredicate] objectAtIndex:row] name];
     } else if (self.editTextTag == kTagStatus) {
         return [self.statusArray objectAtIndex:row];
     }
+
     return nil;
 }
 
 #pragma mark - UITextFieldDelegate
 
-- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField{
-    return textField.tag == kTagStatus || ((textField.tag == kTagContact || textField.tag == kTagProduct) && isCurrentUser);
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField {
+    return (isCurrentUser && textField.tag >= kTagContact) && !(self.isNewSampleRequest && textField.tag == kTagDeliveryDate);
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    if (textField.tag < kTagContact) {
+        [textField resignFirstResponder];
+    }
+
+    return NO;
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    [textField resignFirstResponder];
     return NO;
 }
 
@@ -218,21 +274,35 @@
     }
 
     self.editTextTag = textField.tag;
-    NSInteger row = 0;
+    if (self.editTextTag == kTagDeliveryDate) {
+        NSDateFormatter *f = [[NSDateFormatter alloc] init];
+        [f setDateFormat:@"yyyy-MM-dd"];
+        if (textField.text && textField.text.length > 0) {
+            [self.datePickerView setDate:[f dateFromString:textField.text]];
+        } else {
+            [self.datePickerView setDate:[NSDate date]];
+        }
+        return;
+    }
 
+    NSInteger row = 0;
     [self.pickerView reloadAllComponents];
     [textField reloadInputViews];
 
     if (self.editTextTag == kTagContact) {
-        row = [self.contactMgr.dataRows indexOfObject:self.contactObject];
+        row = [[self.contactMgr.dataRows filteredArrayUsingPredicate:self.contactPredicate] indexOfObject:self.contactObject];
     } else if (self.editTextTag == kTagProduct) {
-        row = [self.productMgr.dataRows indexOfObject:self.productObject];
+        row = [[self.productMgr.dataRows filteredArrayUsingPredicate:self.productPredicate] indexOfObject:self.productObject];
     } else if (self.editTextTag == kTagStatus) {
         row = [self.statusArray indexOfObject:textField.text];
+    } else {
+        return;
     }
+
     row = row == NSNotFound ? 0 : row;
 
     [self.pickerView selectRow:row inComponent:0 animated:NO];
+    [self pickerView:self.pickerView didSelectRow:row inComponent:0];
 }
 
 #pragma mark - UIAlertViewDelegate
@@ -271,11 +341,7 @@
                                   @[ @"Status",
                                      kSampleRequestStatusField,
                                      [[self class] emptyStringForNullValue:@"Requested"],
-                                     [self dataTextFieldPicker:@"Requested" tag:kTagStatus] ],
-                                  @[ @"Delivery Date",
-                                     kSampleRequestDeliveryDateField,
-                                     [[self class] emptyStringForNullValue:self.sampleRequest.deliveryDate],
-                                    [self dataTextField:self.sampleRequest.deliveryDate] ]
+                                     [self dataTextField:@"Requested"] ]
                                   ];
     } else {
         self.sampleRequestDataRows = @[ @[ @"Name",
@@ -301,7 +367,7 @@
                                  @[ @"Delivery Date",
                                      kSampleRequestDeliveryDateField,
                                      [[self class] emptyStringForNullValue:self.sampleRequest.deliveryDate],
-                                    [self dataTextField:self.sampleRequest.deliveryDate] ],
+                                    [self dataTextFieldPicker:self.sampleRequest.deliveryDate tag:kTagDeliveryDate] ],
                                  @[ @"Authorized Users",
                                      kSampleRequestAuthorizedUsersField,
                                     [[self class] emptyStringForNullValue:[self formatAuthorizedUsers]],
@@ -327,14 +393,26 @@
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelEditSampleRequest)];
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(saveSampleRequest)];
     }
+
+    [self.tableView setAllowsSelection:YES];
     [self.tableView reloadData];
     __weak SampleRequestDetailViewController *weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.contactObject) {
+            UITextField *field = [self.view viewWithTag:kTagContact];
+            field.text = [self formatNameFromContact:self.contactObject];
+        }
+        if (self.productObject) {
+            UITextField *field = [self.view viewWithTag:kTagProduct];
+            field.text = self.productObject.name;
+        }
+
         [weakSelf.dataRows[0][3] becomeFirstResponder];
     });
 }
 
 - (void)cancelEditSampleRequest {
+    [self.tableView setAllowsSelection:NO];
     self.isEditing = NO;
     [self configureInitialBarButtonItems];
     [self.tableView reloadData];
@@ -349,24 +427,27 @@
         NSString *origFieldData = fieldArray[2];
         id newFieldData = ((UITextField *)fieldArray[3]).text;
         if ((self.isNewSampleRequest && newFieldData) || ![newFieldData isEqualToString:origFieldData]) {
-            if (fieldName == kSampleRequestContactField) {
+            if ([fieldName isEqualToString:kSampleRequestContactField]) {
                 newFieldData = self.contactObject.objectId;
                 if (!newFieldData) {
+                    [Helper showToast:self.toastView message:@"Please select a contact" label:self.toastViewMessageLabel];
                     return;
                 }
-            } else if (fieldName == kSampleRequestProductField) {
+            } else if ([fieldName isEqualToString:kSampleRequestProductField]) {
                 newFieldData = self.productObject.objectId;
                 if (!newFieldData) {
+                    [Helper showToast:self.toastView message:@"Please select a product" label:self.toastViewMessageLabel];
                     return;
                 }
-            } else if (fieldName == kSampleRequestQuantityField) {
+            } else if ([fieldName isEqualToString:kSampleRequestQuantityField]) {
                 NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
                 f.numberStyle = NSNumberFormatterDecimalStyle;
                 newFieldData = [f numberFromString:newFieldData];
                 if (!newFieldData) {
+                    [Helper showToast:self.toastView message:@"Please select a quantity" label:self.toastViewMessageLabel];
                     return;
                 }
-            } else if (fieldName == kSampleRequestDeliveryDateField) {
+            } else if ([fieldName isEqualToString:kSampleRequestDeliveryDateField]) {
                 NSString *date = newFieldData;
                 if (!date || date.length == 0) {
                     continue;
@@ -407,21 +488,37 @@
 }
 
 - (UITextField *)dataTextFieldPicker:(NSString *)propertyValue tag:(NSInteger) tag {
+    if (tag == kTagDeliveryDate) {
+        UITextField *textField = [[UITextField alloc] initWithFrame:CGRectZero];
+        textField.delegate = self;
+        textField.tag = tag;
+        textField.text = propertyValue;
+
+        UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithTitle:@"Done" style:UIBarButtonSystemItemDone
+                                                                      target:self action:@selector(pickerDone:)];
+        UIToolbar *toolBar = [[UIToolbar alloc]initWithFrame:
+                              CGRectMake(0, self.view.frame.size.height - self.datePickerView.frame.size.height - 50, 320, 50)];
+        [toolBar setBarStyle:UIBarStyleDefault];
+        [toolBar setItems:[NSArray arrayWithObjects:doneButton, nil]];
+
+        textField.inputView = self.datePickerView;
+        textField.inputAccessoryView = toolBar;
+
+        return textField;
+    }
+
     UITextField *textField = [[UITextField alloc] initWithFrame:CGRectZero];
     textField.delegate = self;
     textField.tag = tag;
     textField.text = propertyValue;
 
-    UIBarButtonItem *doneButton = [[UIBarButtonItem alloc]
-                                   initWithTitle:@"Done" style:UIBarButtonItemStyleDone
-                                   target:self action:@selector(pickerDone:)];
+    UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithTitle:@"Done" style:UIBarButtonSystemItemDone
+                                                                  target:self action:@selector(pickerDone:)];
     UIToolbar *toolBar = [[UIToolbar alloc]initWithFrame:
-                          CGRectMake(0, self.view.frame.size.height-
-                                     self.pickerView.frame.size.height-50, 320, 50)];
-    [toolBar setBarStyle:UIBarStyleBlackOpaque];
-    NSArray *toolbarItems = [NSArray arrayWithObjects:
-                             doneButton, nil];
-    [toolBar setItems:toolbarItems];
+                          CGRectMake(0, self.view.frame.size.height - self.pickerView.frame.size.height - 50, 320, 50)];
+    [toolBar setBarStyle:UIBarStyleDefault];
+    [toolBar setItems:[NSArray arrayWithObjects:doneButton, nil]];
+
     textField.inputView = self.pickerView;
     textField.inputAccessoryView = toolBar;
 
@@ -440,7 +537,14 @@
 }
 
 - (void)pickerDone:(id) sender {
-    [[self.view viewWithTag:self.editTextTag] resignFirstResponder];
+    UITextField *textField = [self.view viewWithTag:self.editTextTag];
+    if (self.editTextTag == kTagDeliveryDate) {
+        NSDateFormatter *f = [[NSDateFormatter alloc] init];
+        [f setDateFormat:@"yyyy-MM-dd"];
+        textField.text = [f stringFromDate:self.datePickerView.date];
+    }
+
+    [textField resignFirstResponder];
 }
 
 - (void)textFieldAddLeftMargin:(UITextField *)textField {

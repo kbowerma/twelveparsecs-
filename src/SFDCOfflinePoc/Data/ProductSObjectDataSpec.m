@@ -2,7 +2,7 @@
 //  ProductSObjectDataSpec.m
 //  SFDCOfflinePoc
 //
-//  Created by PAULO VITOR MAGACHO DA SILVA on 1/24/16.
+//  Created by pvmagacho on 1/24/16.
 //  Copyright © 2016 Topcoder Inc. All rights reserved.
 //
 
@@ -13,12 +13,11 @@ NSString * const kProductNameField          = @"Name";
 NSString * const kProductDescriptionField   = @"Description__c";
 NSString * const kProductSKUField           = @"Sku__c";
 
-
 @implementation ProductSObjectDataSpec
 
 - (id)init {
     NSString *objectType = @"Product__c";
-    NSArray *objectFieldSpecs = @[ [[SObjectDataFieldSpec alloc] initWithFieldName:kObjectIdField searchable:NO],
+    NSArray *objectFieldSpecs = @[ [[SObjectDataFieldSpec alloc] initWithFieldName:kSObjectIdField searchable:NO],
                                    [[SObjectDataFieldSpec alloc] initWithFieldName:kObjectOwnerIdField searchable:NO],
                                    [[SObjectDataFieldSpec alloc] initWithFieldName:kProductNameField searchable:YES],
                                    [[SObjectDataFieldSpec alloc] initWithFieldName:kProductDescriptionField searchable:YES],
