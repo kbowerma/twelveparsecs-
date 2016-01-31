@@ -2,7 +2,7 @@
 //  ProductsListViewController.m
 //  SFDCOfflinePoc
 //
-//  Created by PAULO VITOR MAGACHO DA SILVA on 1/24/16.
+//  Created by pvmagacho on 1/24/16.
 //  Copyright © 2016 Topcoder Inc. All rights reserved.
 //
 
@@ -22,8 +22,6 @@
 #import <SmartSync/SFSyncState.h>
 
 static NSString * const kNavBarTitleText                = @"Products";
-static NSUInteger const kNavBarTintColor                = 0xf10000;
-static CGFloat    const kNavBarTitleFontSize            = 27.0;
 static NSUInteger const kProductTitleTextColor          = 0x696969;
 static CGFloat    const kProductTitleFontSize           = 15.0;
 static CGFloat    const kProductDetailFontSize          = 13.0;
@@ -63,11 +61,6 @@ static CGFloat    const kProductDetailFontSize          = 13.0;
             [self.dataMgr refreshRemoteData];
     }
     return self;
-}
-
-- (void)dealloc
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 #pragma mark - View lifecycle

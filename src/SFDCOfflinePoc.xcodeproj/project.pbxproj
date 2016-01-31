@@ -27,7 +27,8 @@
 		4B365D371C564174005EBCAD /* SObjectDataFieldSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B365D1D1C564174005EBCAD /* SObjectDataFieldSpec.m */; };
 		4B365D381C564174005EBCAD /* SObjectDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B365D1F1C564174005EBCAD /* SObjectDataManager.m */; };
 		4B365D391C564174005EBCAD /* SObjectDataSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B365D211C564174005EBCAD /* SObjectDataSpec.m */; };
-		4B365D3A1C564174005EBCAD /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B365D241C564174005EBCAD /* Reachability.m */; };
+		4B5C1E1D1C5B2581000A135E /* Helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5C1E1C1C5B2581000A135E /* Helper.m */; };
+		4BD3DE2C1C5AFAFE00B6FB2E /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4BD3DE2B1C5AFAFE00B6FB2E /* Settings.bundle */; };
 		4BDBFEE31C56C78000F1535A /* InitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BDBFEE21C56C78000F1535A /* InitialViewController.m */; };
 		4F8D5EA31B6C0568005E64D4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F8D5EA21B6C0568005E64D4 /* main.m */; };
 		4F8D5EAE1B6C0568005E64D4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4F8D5EAD1B6C0568005E64D4 /* Images.xcassets */; };
@@ -76,8 +77,9 @@
 		4B365D1F1C564174005EBCAD /* SObjectDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SObjectDataManager.m; sourceTree = "<group>"; };
 		4B365D201C564174005EBCAD /* SObjectDataSpec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SObjectDataSpec.h; sourceTree = "<group>"; };
 		4B365D211C564174005EBCAD /* SObjectDataSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SObjectDataSpec.m; sourceTree = "<group>"; };
-		4B365D231C564174005EBCAD /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
-		4B365D241C564174005EBCAD /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
+		4B5C1E1B1C5B2581000A135E /* Helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Helper.h; path = Classes/Helper.h; sourceTree = "<group>"; };
+		4B5C1E1C1C5B2581000A135E /* Helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Helper.m; path = Classes/Helper.m; sourceTree = "<group>"; };
+		4BD3DE2B1C5AFAFE00B6FB2E /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		4BDBFEE11C56C78000F1535A /* InitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitialViewController.h; sourceTree = "<group>"; };
 		4BDBFEE21C56C78000F1535A /* InitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InitialViewController.m; sourceTree = "<group>"; };
 		4F8D5E9D1B6C0568005E64D4 /* SFDCOfflinePoc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SFDCOfflinePoc.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -116,24 +118,24 @@
 				4B365CF71C564174005EBCAD /* ActionsPopupController.m */,
 				4B365CF81C564174005EBCAD /* AppDelegate.h */,
 				4B365CF91C564174005EBCAD /* AppDelegate.m */,
-				4B365CFA1C564174005EBCAD /* BaseListViewController.h */,
-				4B365CFB1C564174005EBCAD /* BaseListViewController.m */,
-				4B365CFC1C564174005EBCAD /* ContactDetailViewController.h */,
-				4B365CFD1C564174005EBCAD /* ContactDetailViewController.m */,
-				4B365CFE1C564174005EBCAD /* ContactListViewController.h */,
-				4B365CFF1C564174005EBCAD /* ContactListViewController.m */,
 				4BDBFEE11C56C78000F1535A /* InitialViewController.h */,
 				4BDBFEE21C56C78000F1535A /* InitialViewController.m */,
-				4B365D021C564174005EBCAD /* ProductDetailViewController.h */,
-				4B365D031C564174005EBCAD /* ProductDetailViewController.m */,
-				4B365D041C564174005EBCAD /* ProductsListViewController.h */,
-				4B365D051C564174005EBCAD /* ProductsListViewController.m */,
-				4B365D061C564174005EBCAD /* SampleRequestDetailViewController.h */,
-				4B365D071C564174005EBCAD /* SampleRequestDetailViewController.m */,
-				4B365D081C564174005EBCAD /* SampleRequestListViewController.h */,
-				4B365D091C564174005EBCAD /* SampleRequestListViewController.m */,
 				4B365D0A1C564174005EBCAD /* TabBarViewController.h */,
 				4B365D0B1C564174005EBCAD /* TabBarViewController.m */,
+				4B365CFA1C564174005EBCAD /* BaseListViewController.h */,
+				4B365CFB1C564174005EBCAD /* BaseListViewController.m */,
+				4B365CFE1C564174005EBCAD /* ContactListViewController.h */,
+				4B365CFF1C564174005EBCAD /* ContactListViewController.m */,
+				4B365D041C564174005EBCAD /* ProductsListViewController.h */,
+				4B365D051C564174005EBCAD /* ProductsListViewController.m */,
+				4B365D081C564174005EBCAD /* SampleRequestListViewController.h */,
+				4B365D091C564174005EBCAD /* SampleRequestListViewController.m */,
+				4B365CFC1C564174005EBCAD /* ContactDetailViewController.h */,
+				4B365CFD1C564174005EBCAD /* ContactDetailViewController.m */,
+				4B365D021C564174005EBCAD /* ProductDetailViewController.h */,
+				4B365D031C564174005EBCAD /* ProductDetailViewController.m */,
+				4B365D061C564174005EBCAD /* SampleRequestDetailViewController.h */,
+				4B365D071C564174005EBCAD /* SampleRequestDetailViewController.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -143,14 +145,14 @@
 			children = (
 				4B365D0D1C564174005EBCAD /* ContactSObjectData.h */,
 				4B365D0E1C564174005EBCAD /* ContactSObjectData.m */,
-				4B365D0F1C564174005EBCAD /* ContactSObjectDataSpec.h */,
-				4B365D101C564174005EBCAD /* ContactSObjectDataSpec.m */,
 				4B365D111C564174005EBCAD /* ProductSObjectData.h */,
 				4B365D121C564174005EBCAD /* ProductSObjectData.m */,
-				4B365D131C564174005EBCAD /* ProductSObjectDataSpec.h */,
-				4B365D141C564174005EBCAD /* ProductSObjectDataSpec.m */,
 				4B365D151C564174005EBCAD /* SampleRequestSObjectData.h */,
 				4B365D161C564174005EBCAD /* SampleRequestSObjectData.m */,
+				4B365D0F1C564174005EBCAD /* ContactSObjectDataSpec.h */,
+				4B365D101C564174005EBCAD /* ContactSObjectDataSpec.m */,
+				4B365D131C564174005EBCAD /* ProductSObjectDataSpec.h */,
+				4B365D141C564174005EBCAD /* ProductSObjectDataSpec.m */,
 				4B365D171C564174005EBCAD /* SampleRequestSObjectDataSpec.h */,
 				4B365D181C564174005EBCAD /* SampleRequestSObjectDataSpec.m */,
 				4B365D191C564174005EBCAD /* SObjectData+Internal.h */,
@@ -166,13 +168,13 @@
 			path = Data;
 			sourceTree = "<group>";
 		};
-		4B365D221C564174005EBCAD /* Reachability */ = {
+		4B5C1E1A1C5B24F2000A135E /* Helper */ = {
 			isa = PBXGroup;
 			children = (
-				4B365D231C564174005EBCAD /* Reachability.h */,
-				4B365D241C564174005EBCAD /* Reachability.m */,
+				4B5C1E1B1C5B2581000A135E /* Helper.h */,
+				4B5C1E1C1C5B2581000A135E /* Helper.m */,
 			);
-			path = Reachability;
+			name = Helper;
 			sourceTree = "<group>";
 		};
 		4F8D5E941B6C0568005E64D4 = {
@@ -196,9 +198,9 @@
 		4F8D5E9F1B6C0568005E64D4 /* SFDCOfflinePoc */ = {
 			isa = PBXGroup;
 			children = (
+				4B5C1E1A1C5B24F2000A135E /* Helper */,
 				4B365CF51C564174005EBCAD /* Classes */,
 				4B365D0C1C564174005EBCAD /* Data */,
-				4B365D221C564174005EBCAD /* Reachability */,
 				4F8D5EA01B6C0568005E64D4 /* Supporting Files */,
 			);
 			path = SFDCOfflinePoc;
@@ -210,6 +212,7 @@
 				4F8D5EAD1B6C0568005E64D4 /* Images.xcassets */,
 				4F8D5EA11B6C0568005E64D4 /* Info.plist */,
 				4F8D5EA21B6C0568005E64D4 /* main.m */,
+				4BD3DE2B1C5AFAFE00B6FB2E /* Settings.bundle */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -283,6 +286,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4BD3DE2C1C5AFAFE00B6FB2E /* Settings.bundle in Resources */,
 				4F8D5EAE1B6C0568005E64D4 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -360,7 +364,7 @@
 				4B365D2B1C564174005EBCAD /* ProductDetailViewController.m in Sources */,
 				4F8D5EA31B6C0568005E64D4 /* main.m in Sources */,
 				4B365D321C564174005EBCAD /* ProductSObjectData.m in Sources */,
-				4B365D3A1C564174005EBCAD /* Reachability.m in Sources */,
+				4B5C1E1D1C5B2581000A135E /* Helper.m in Sources */,
 				4B365D261C564174005EBCAD /* AppDelegate.m in Sources */,
 				4B365D2D1C564174005EBCAD /* SampleRequestDetailViewController.m in Sources */,
 				4B365D381C564174005EBCAD /* SObjectDataManager.m in Sources */,

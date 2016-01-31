@@ -22,6 +22,14 @@
  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//
+//  ContactSObjectData.m
+//  SFDCOfflinePoc
+//
+//  Created by pvmagacho on 1/24/16.
+//  Copyright © 2016 Topcoder Inc. All rights reserved.
+//
+
 #import "ContactSObjectData.h"
 #import "ContactSObjectDataSpec.h"
 #import "SObjectData+Internal.h"

@@ -22,9 +22,23 @@
  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//
+//  ContactSObjectData.h
+//  SFDCOfflinePoc
+//
+//  Created by pvmagacho on 1/24/16.
+//  Copyright © 2016 Topcoder Inc. All rights reserved.
+//
+
 #import <Foundation/Foundation.h>
 #import "SObjectData.h"
 
+/**
+ * Object to hold Contact information.
+ *
+ * @author pvmagacho
+ * @version 1.0
+ */
 @interface ContactSObjectData : SObjectData
 
 @property (nonatomic, copy) NSString *firstName;

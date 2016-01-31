@@ -39,6 +39,7 @@
                     dataSpec:(SObjectDataSpec *)dataSpec;
 
 - (id)initWithDataSpec:(SObjectDataSpec *)dataSpec;
+- (SObjectDataSpec *)dataSpec;
 
 - (void)refreshLocalData;
 - (void)createLocalData:(SObjectData *)newData;
@@ -48,6 +49,7 @@
 - (BOOL)dataLocallyCreated:(SObjectData *)data;
 - (BOOL)dataLocallyUpdated:(SObjectData *)data;
 - (BOOL)dataLocallyDeleted:(SObjectData *)data;
+- (void)refreshRemoteData:(SFSyncSyncManagerUpdateBlock)completionBlock;
 - (void)refreshRemoteData;
 - (void)updateRemoteData:(SFSyncSyncManagerUpdateBlock)completionBlock;
 - (void)filterOnSearchTerm:(NSString *)searchTerm completion:(void (^)(void))completionBlock;

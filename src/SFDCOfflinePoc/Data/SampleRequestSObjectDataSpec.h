@@ -2,7 +2,7 @@
 //  SampleRequestSObjectDataSpec.h
 //  SFDCOfflinePoc
 //
-//  Created by PAULO VITOR MAGACHO DA SILVA on 1/24/16.
+//  Created by pvmagacho on 1/24/16.
 //  Copyright © 2016 Topcoder Inc. All rights reserved.
 //
 
@@ -20,6 +20,12 @@ extern NSString * const kSampleRequestQuantityField;
 extern NSString * const kSampleRequestStatusField;
 extern NSString * const kSampleRequestAuthorizedUsersField;
 
+/**
+ * Object to hold Sample Request data specification.
+ *
+ * @author pvmagacho
+ * @version 1.0
+ */
 @interface SampleRequestSObjectDataSpec : SObjectDataSpec
 
 @end

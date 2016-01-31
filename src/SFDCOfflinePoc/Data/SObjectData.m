@@ -24,6 +24,7 @@
 
 #import "SObjectData+Internal.h"
 #import <SalesforceSDKCore/NSDictionary+SFAdditions.h>
+#import <SmartSync/SmartSync.h>
 
 @implementation SObjectData
 
@@ -73,11 +74,11 @@
 }
 
 - (NSString *)objectId {
-    return [self nonNullFieldValue:kObjectIdField];
+    return [self nonNullFieldValue:kSObjectIdField];
 }
 
 - (void)setObjectId:(NSString *)objectId {
-    [self updateSoupForFieldName:kObjectIdField fieldValue:objectId];
+    [self updateSoupForFieldName:kSObjectIdField fieldValue:objectId];
 }
 
 - (NSString *)ownerId {

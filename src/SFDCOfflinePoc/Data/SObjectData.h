@@ -25,7 +25,6 @@
 #import <Foundation/Foundation.h>
 #import "SObjectDataSpec.h"
 
-static NSString * const kObjectIdField         = @"Id";
 static NSString * const kObjectOwnerIdField    = @"OwnerId";
 
 @interface SObjectData : NSObject

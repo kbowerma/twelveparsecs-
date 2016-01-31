@@ -1,19 +1,21 @@
 //
-//  SampleRequestDetailViewController.h
+//  ProductDetailViewController,h
 //  SFDCOfflinePoc
 //
-//  Created by PAULO VITOR MAGACHO DA SILVA on 1/24/16.
+//  Created by pvmagacho on 1/24/16.
 //  Copyright © 2016 Topcoder Inc. All rights reserved.
 //
 
 #import "ProductDetailViewController.h"
 #import "ProductSObjectDataSpec.h"
+#import "Helper.h"
 
 @interface ProductDetailViewController () <UIAlertViewDelegate>
 
 @property (nonatomic, strong) ProductSObjectData *product;
 @property (nonatomic, strong) SObjectDataManager *dataMgr;
 @property (nonatomic, copy) void (^saveBlock)(void);
+
 @property (nonatomic, strong) NSArray *dataRows;
 @property (nonatomic, strong) NSArray *productDataRows;
 @property (nonatomic, strong) NSArray *deleteButtonDataRow;
@@ -21,14 +23,29 @@
 @property (nonatomic, assign) BOOL productUpdated;
 @property (nonatomic, assign) BOOL isNewProduct;
 
+// Ui properties
+@property (nonatomic, strong) UIView *toastView;
+@property (nonatomic, strong) UILabel *toastViewMessageLabel;
+
 @end
 
 @implementation ProductDetailViewController
 
+/**
+ Initialize a new product detail view controller.
+ @param dataMgr the data manager object.
+ @param saveBlock the block to be called when data is saved.
+ */
 - (id)initForNewProductWithDataManager:(SObjectDataManager *)dataMgr saveBlock:(void (^)(void))saveBlock {
     return [self initWithProduct:nil dataManager:dataMgr saveBlock:saveBlock];
 }
 
+/**
+ Initialize with an existing product detail view controller.
+ @param product the current product.
+ @param dataMgr the data manager object.
+ @param saveBlock the block to be called when data is saved.
+ */
 - (id)initWithProduct:(ProductSObjectData *)product dataManager:(SObjectDataManager *)dataMgr saveBlock:(void (^)(void))saveBlock {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
@@ -48,20 +65,33 @@
 
 - (void)loadView {
     [super loadView];
-    
+
+    // Toast view
+    self.toastView = [[UIView alloc] initWithFrame:CGRectZero];
+    self.toastView.backgroundColor = [UIColor colorWithRed:(38.0 / 255.0) green:(38.0 / 255.0) blue:(38.0 / 255.0) alpha:0.7];
+    self.toastView.layer.cornerRadius = 10.0;
+    self.toastView.alpha = 0.0;
+
+    self.toastViewMessageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    self.toastViewMessageLabel.font = [UIFont systemFontOfSize:kToastMessageFontSize];
+    self.toastViewMessageLabel.textColor = [UIColor whiteColor];
+    [self.toastView addSubview:self.toastViewMessageLabel];
+    [self.view addSubview:self.toastView];
+
     self.dataRows = [self dataRowsFromProduct];
     self.navigationController.navigationBar.tintColor = [UIColor whiteColor];
     [self configureInitialBarButtonItems];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    [self.tableView setAllowsSelection:NO];
+
     if (self.isNewProduct) {
         [self editProduct];
     }
-}
-
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-    // Do any additional setup after loading the view.
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -69,12 +99,6 @@
     if (self.productUpdated && self.saveBlock != NULL) {
         dispatch_async(dispatch_get_main_queue(), self.saveBlock);
     }
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 #pragma mark - UITableView delegate methods
@@ -141,7 +165,6 @@
 }
 
 - (NSArray *)dataRowsFromProduct {
-    
     self.productDataRows = @[ @[ @"Name",
                                  kProductNameField,
                                  [[self class] emptyStringForNullValue:self.product.name],
@@ -162,6 +185,7 @@
     if (!self.isNewProduct) {
         [workingDataRows addObject:self.deleteButtonDataRow];
     }
+    
     return workingDataRows;
 }
 
@@ -193,7 +217,15 @@
         NSString *fieldName = fieldArray[1];
         NSString *origFieldData = fieldArray[2];
         NSString *newFieldData = ((UITextField *)fieldArray[3]).text;
-        if (![newFieldData isEqualToString:origFieldData]) {
+        if (self.isNewProduct || ![newFieldData isEqualToString:origFieldData]) {
+            BOOL empty = !newFieldData || newFieldData.length == 0;
+            if (empty && [fieldName isEqualToString:kProductNameField]) {
+                [Helper showToast:self.toastView message:@"Please enter a name" label:self.toastViewMessageLabel];
+                return;
+            } else if (empty && [fieldName isEqualToString:kProductSKUField]) {
+                [Helper showToast:self.toastView message:@"Please enter a SKU value" label:self.toastViewMessageLabel];
+                return;
+            }
             [self.product updateSoupForFieldName:fieldName fieldValue:newFieldData];
             self.productUpdated = YES;
         }

@@ -98,6 +98,11 @@ static NSString * const OAuthRedirectURI        = @"testsfdc:///mobilesdk/detect
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    NSUserDefaults * standardUserDefaults = [NSUserDefaults standardUserDefaults];
+    if (![standardUserDefaults objectForKey:@"timer_preference"]) {
+        [self registerDefaultsFromSettingsBundle];
+    }
+
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     [self initializeAppViewState];
     [[SalesforceSDKManager sharedManager] launch];
@@ -145,6 +150,7 @@ static NSString * const OAuthRedirectURI        = @"testsfdc:///mobilesdk/detect
 
     TabBarViewController *tabVC = [[TabBarViewController alloc] init];
     tabVC.viewControllers = [NSArray arrayWithObjects:cnavVC, pnavVC, snavVC, nil];
+    tabVC.mgrArray = [NSArray arrayWithObjects:contactVC.dataMgr, productVC.dataMgr, sampleVC.dataMgr, nil];
 
     // set managers
     contactVC.contactDataMgr = contactVC.dataMgr;
@@ -214,6 +220,32 @@ static NSString * const OAuthRedirectURI        = @"testsfdc:///mobilesdk/detect
         [self initializeAppViewState];
         [[SalesforceSDKManager sharedManager] launch];
     }];
+}
+
+
+#pragma mark - NSUserDefaults
+
+- (void)registerDefaultsFromSettingsBundle {
+    // this function writes default settings as settings
+    NSString *settingsBundle = [[NSBundle mainBundle] pathForResource:@"Settings" ofType:@"bundle"];
+    if(!settingsBundle) {
+        NSLog(@"Could not find Settings.bundle");
+        return;
+    }
+
+    NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:[settingsBundle stringByAppendingPathComponent:@"Root.plist"]];
+    NSArray *preferences = [settings objectForKey:@"PreferenceSpecifiers"];
+
+    NSMutableDictionary *defaultsToRegister = [[NSMutableDictionary alloc] initWithCapacity:[preferences count]];
+    for(NSDictionary *prefSpecification in preferences) {
+        NSString *key = [prefSpecification objectForKey:@"Key"];
+        if(key) {
+            [defaultsToRegister setObject:[prefSpecification objectForKey:@"DefaultValue"] forKey:key];
+        }
+    }
+
+    [[NSUserDefaults standardUserDefaults] registerDefaults:defaultsToRegister];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 @end

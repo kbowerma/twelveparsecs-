@@ -2,12 +2,18 @@
 //  SampleRequestSObjectData.h
 //  SFDCOfflinePoc
 //
-//  Created by PAULO VITOR MAGACHO DA SILVA on 1/24/16.
+//  Created by pvmagacho on 1/24/16.
 //  Copyright © 2016 Topcoder Inc. All rights reserved.
 //
 
 #import "SObjectData.h"
 
+/**
+ * Object to hold Sample Request information.
+ *
+ * @author pvmagacho
+ * @version 1.0
+ */
 @interface SampleRequestSObjectData : SObjectData
 
 @property (nonatomic, copy) NSString *name;

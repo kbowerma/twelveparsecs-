@@ -26,24 +26,23 @@
 #import "ActionsPopupController.h"
 #import "SObjectDataManager.h"
 #import "WYPopoverController.h"
+#import "Helper.h"
 #import <SalesforceSDKCore/SFDefaultUserManagementViewController.h>
 #import <SmartStore/SFSmartStoreInspectorViewController.h>
 #import <SalesforceSDKCore/SFAuthenticationManager.h>
 #import <SalesforceSDKCore/SFSecurityLockout.h>
-#import <SmartSync/SFSmartSyncSyncManager.h>
-#import <SmartSync/SFSyncState.h>
 
 static NSUInteger const kSearchHeaderBackgroundColor    = 0xafb6bb;
 static CGFloat    const kControlBuffer                  = 5.0;
 static CGFloat    const kSearchHeaderHeight             = 50.0;
 static CGFloat    const kTableViewRowHeight             = 60.0;
-static CGFloat    const kToastMessageFontSize           = 16.0;
 
 @interface BaseListViewController () <UISearchBarDelegate>
 
 @property (nonatomic, strong) WYPopoverController *popOverController;
 @property (nonatomic, strong) UIActionSheet *logoutActionSheet;
 
+@property (nonatomic, assign) BOOL isSearching;
 
 // View / UI properties
 @property (nonatomic, strong) UILabel *navBarLabel;
@@ -54,9 +53,6 @@ static CGFloat    const kToastMessageFontSize           = 16.0;
 @property (nonatomic, strong) UIBarButtonItem *moreButton;
 @property (nonatomic, strong) UIView *toastView;
 @property (nonatomic, strong) UILabel *toastViewMessageLabel;
-@property (nonatomic, copy) NSString *toastMessage;
-
-@property (nonatomic, assign) BOOL isSearching;
 
 @end
 
@@ -136,7 +132,7 @@ static CGFloat    const kToastMessageFontSize           = 16.0;
     self.navBarLabel.frame = navBarLabelFrame;
     [self layoutSearchHeader];
     
-    [self layoutToastView];
+    [Helper layoutToastView:self.toastView message:nil label:self.toastViewMessageLabel];
 }
 
 #pragma mark - UITableView delegate methods
@@ -187,6 +183,11 @@ static CGFloat    const kToastMessageFontSize           = 16.0;
 
 #pragma mark - Public methods
 
+/**
+ Create color from an integer rgb value.
+ @param rgbHexColorValue integer rgb value.
+ @return the color.
+ */
 + (UIColor *)colorFromRgbHexValue:(NSUInteger)rgbHexColorValue {
     return [UIColor colorWithRed:((CGFloat)((rgbHexColorValue & 0xFF0000) >> 16)) / 255.0
                            green:((CGFloat)((rgbHexColorValue & 0xFF00) >> 8)) / 255.0
@@ -194,12 +195,22 @@ static CGFloat    const kToastMessageFontSize           = 16.0;
                            alpha:1.0];
 }
 
+/**
+ Format the title or return an empty string.
+ @param title to format.
+ @return the formatted title.
+ */
 - (NSString *)formatTitle:(NSString *)title {
     title = [title stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     return (title != nil ? title : @"");
 }
 
-- (UIView *)accessoryViewForContact:(SObjectData *)contact {
+/**
+ Create an accessory view for each cell. 
+ @param obj the object used to create the accessory.
+ @return the created accessory view.
+ */
+- (UIView *)accessoryViewForContact:(SObjectData *)obj {
     static UIImage *sLocalAddImage = nil;
     static UIImage *sLocalUpdateImage = nil;
     static UIImage *sLocalDeleteImage = nil;
@@ -218,11 +229,11 @@ static CGFloat    const kToastMessageFontSize           = 16.0;
         sChevronRightImage = [UIImage imageNamed:@"chevron-right"];
     }
 
-    if ([self.dataMgr dataHasLocalChanges:contact]) {
+    if ([self.dataMgr dataHasLocalChanges:obj]) {
         UIImage *localImage;
-        if ([self.dataMgr dataLocallyCreated:contact])
+        if ([self.dataMgr dataLocallyCreated:obj])
             localImage = sLocalAddImage;
-        else if ([self.dataMgr dataLocallyUpdated:contact])
+        else if ([self.dataMgr dataLocallyUpdated:obj])
             localImage = sLocalUpdateImage;
         else
             localImage = sLocalDeleteImage;
@@ -281,26 +292,42 @@ static CGFloat    const kToastMessageFontSize           = 16.0;
     }
 }
 
+/*!
+ Synchronize up/down all records for current data manager.
+ */
 - (void)syncUpDown {
-    [self showToast:@"Syncing with Salesforce"];
+    if (![Helper isReachable]) {
+        [Helper showToast:self.toastView message:@"Internet is offline" label:self.toastViewMessageLabel];
+        return;
+    }
+
+    if (![Helper tryLock]) {
+        return;
+    }
+
+    [Helper showToast:self.toastView message:@"Syncing with Salesforce" label:self.toastViewMessageLabel];
     self.navigationItem.rightBarButtonItem.enabled = NO;
     __weak BaseListViewController *weakSelf = self;
     [self.dataMgr updateRemoteData:^(SFSyncState *syncProgressDetails) {
         dispatch_async(dispatch_get_main_queue(), ^{
             weakSelf.navigationItem.rightBarButtonItem.enabled = YES;
             if ([syncProgressDetails isDone]) {
-                [weakSelf.dataMgr refreshLocalData];
-                [weakSelf showToast:@"Sync complete!"];
                 [weakSelf.dataMgr refreshRemoteData];
+                [Helper showToast:self.toastView message:@"Sync complete!" label:self.toastViewMessageLabel];
             } else if ([syncProgressDetails hasFailed]) {
-                [weakSelf showToast:@"Sync failed."];
+                [Helper showToast:self.toastView message:@"Sync failed!" label:self.toastViewMessageLabel];
             } else {
-                [weakSelf showToast:[NSString stringWithFormat:@"Unexpected status: %@", [SFSyncState syncStatusToString:syncProgressDetails.status]]];
+                [Helper showToast:self.toastView message:[NSString stringWithFormat:@"Unexpected status: %@", [SFSyncState syncStatusToString:syncProgressDetails.status]] label:self.toastViewMessageLabel];
             }
+
+            [Helper unlock];
         });
     }];
 }
 
+/*!
+ Reload all data.
+ */
 - (void)reloadData {
     [self.tableView reloadData];
 }
@@ -336,51 +363,6 @@ static CGFloat    const kToastMessageFontSize           = 16.0;
     } else if ([text isEqualToString:kActionDbInspector]) {
         [[[SFSmartStoreInspectorViewController alloc] initWithStore:self.dataMgr.store] present:self];
     }
-}
-
-
-- (void)layoutToastView {
-    CGFloat toastWidth = 250.0;
-    CGFloat toastHeight = 50.0;
-    CGFloat bottomScreenPadding = 60.0;
-    
-    self.toastView.frame = CGRectMake(CGRectGetMidX([self.toastView superview].bounds) - (toastWidth / 2.0),
-                                      CGRectGetMaxY([self.toastView superview].bounds) - bottomScreenPadding - toastHeight,
-                                      toastWidth,
-                                      toastHeight);
-    
-    //
-    // messageLabel
-    //
-    NSDictionary *messageAttrs = @{ NSForegroundColorAttributeName: self.toastViewMessageLabel.textColor, NSFontAttributeName: self.toastViewMessageLabel.font };
-    if (self.toastMessage == nil) {
-        self.toastMessage = @" ";
-    }
-    CGSize messageTextSize = [self.toastMessage sizeWithAttributes:messageAttrs];
-    CGRect messageRect = CGRectMake(CGRectGetMidX(self.toastView.bounds) - (messageTextSize.width / 2.0),
-                                    CGRectGetMidY(self.toastView.bounds) - (messageTextSize.height / 2.0),
-                                    messageTextSize.width, messageTextSize.height);
-    self.toastViewMessageLabel.frame = messageRect;
-    self.toastViewMessageLabel.text = self.toastMessage;
-}
-
-- (void)showToast:(NSString *)message {
-    NSTimeInterval const toastDisplayTimeSecs = 2.0;
-    
-    self.toastMessage = message;
-    [self layoutToastView];
-    self.toastView.alpha = 0.0;
-    [UIView beginAnimations:@"toastFadeIn" context:NULL];
-    [UIView setAnimationDuration:0.3];
-    self.toastView.alpha = 1.0;
-    [UIView commitAnimations];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, toastDisplayTimeSecs * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [UIView beginAnimations:@"toastFadeOut" context:NULL];
-        [UIView setAnimationDuration:0.3];
-        self.toastView.alpha = 0.0;
-        [UIView commitAnimations];
-    });
 }
 
 - (void)searchResignFirstResponder {
